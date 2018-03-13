@@ -41,10 +41,10 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
     LinearLayout layout;
 
     Activity activity = CryptoActivity.this;
+
     TextWatcher watcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
         }
 
         @Override
@@ -61,7 +61,6 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
 
         @Override
         public void afterTextChanged(Editable editable) {
-
         }
     };
 
@@ -107,8 +106,8 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
         ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, type);
         spnType.setAdapter(adapter);
 
-        Animations.Scale(spnType, 2000);
-        Animations.Alpha(btnClear, 2000);
+        Animations.Scale(spnType, 1000);
+        Animations.Alpha(btnClear, 1000);
     }
 
     @Override
@@ -180,7 +179,7 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
                     }
 
                     if (isValid) {
-                        click();
+                        encDnc();
                     }
 
                 } catch (Exception e) {
@@ -202,16 +201,16 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
         return false;
     }
 
-    private void click() {
-        Algorithms a = new Algorithms();
+    private void encDnc() {
         String output = "",
                 text = etText.getText().toString(),
                 iv = etIv.getText().toString(),
                 key = etKey.getText().toString();
+        Algorithms a = new Algorithms();
 
         switch (spnType.getSelectedItem().toString()) {
             case "ECB":
-                output = a.ECBMode(text, iv);
+                output = a.ECB(text, iv);
                 break;
 
             case "CFM":
@@ -252,7 +251,7 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
 
             //region Animations
             int random = MyConstant.randInt(1, 9);
-            int time = MyConstant.randInt(1500, 1600);
+            int time = MyConstant.randInt(500, 700);
             switch (random) {
                 case 1:
                 case 6:

@@ -10,18 +10,6 @@
     <WebView
         android:id="@+id/wv1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1" />
+        android:layout_height="match_parent" />
 
-    <WebView
-        android:id="@+id/wv2"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1" />
-
-    <WebView
-        android:id="@+id/wv3"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1" />
 </LinearLayout>

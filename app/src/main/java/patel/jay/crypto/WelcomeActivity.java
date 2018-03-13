@@ -25,9 +25,9 @@ public class WelcomeActivity extends Activity {
         wv.loadUrl("file:///android_asset/crypto1.gif");
         wv.getSettings().setLoadWithOverviewMode(true);
         wv.getSettings().setUseWideViewPort(true);
-        Animations.Scale(wv, 2000);
+        Animations.Scale(wv, 1000);
 
-        new CountDownTimer(5000, 1000) {
+        new CountDownTimer(2000, 1000) {
             public void onFinish() {
                 startActivity(new Intent(getApplicationContext(), CryptoActivity.class));
                 finish();

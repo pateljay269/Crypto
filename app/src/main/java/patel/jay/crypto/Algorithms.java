@@ -55,26 +55,14 @@ public class Algorithms {
     @Nullable
     public int[] lfsr(String str) {
         try {
-            if (str.length() <= 3) {
-                throw new NumberFormatException("Enter More Than 3 Bits");
-            }
-
-            if (Integer.parseInt(str) == 0) {
-                throw new NumberFormatException("Not Allow All 0");
-            }
             double size = Math.pow(2, str.length()) - 1;
             int[] queue = new int[(int) size];
             for (int i = str.length() - 1, j = 0; i >= 0; i--) {
                 int n = Integer.parseInt(str.charAt(i) + "");
-                if (n > 1 || n < 0) {
-                    throw new NumberFormatException("Enter Only 0 And 1");
-                }
                 queue[j++] = n;
             }
             for (int i = str.length(); i < size; i++) {
-                int n = (Integer.parseInt(queue[i - str.length()] + "")
-                        + Integer.parseInt(queue[i - str.length() + 1] + ""))
-                        % 2;
+                int n = (queue[i - str.length()] + queue[i - str.length() + 1]) % 2;
                 queue[i] = n;
             }
 
@@ -201,7 +189,7 @@ public class Algorithms {
                 cBit = new int[size];
                 ctrBit = Integer.toBinaryString(counter);
 
-                for (int j = 0; j < nonce.length(); j++) {
+                for (int j = 0; j < 4; j++) {
                     iv[j] = Integer.parseInt(nonce.charAt(j) + "");
                 }
 
@@ -247,8 +235,6 @@ public class Algorithms {
     public String CFM(String text, String sIV, String sIV2) {
         try {
             String output = "", cBit = "", pBit = "";
-
-//            System.out.println("Select Any One:" + "\n1 - Encryption" + "\n2 - Decryption");
 
             switch (1) {
                 case 1:
@@ -296,8 +282,6 @@ public class Algorithms {
 
                 ascii = Integer.parseInt(cBit, 2);
                 output += ((char) ascii);
-
-//                System.out.println("CT-" + cipher + " '" + ((char) n) + "'\n");
             }
 
             return output;
@@ -308,7 +292,7 @@ public class Algorithms {
         }
     }
 
-    public String ECBMode(String text, String sIv) {
+    public String ECB(String text, String sIv) {
         try {
             String output = "", cBit = "", pBit = "";
             int[] iv = lfsr(sIv);
@@ -334,8 +318,6 @@ public class Algorithms {
                 output += (char) ascii;
             }
 
-            System.out.println(output);
-
             return output;
 
         } catch (Exception e) {
@@ -343,6 +325,5 @@ public class Algorithms {
             return e.getMessage();
         }
     }
-
 
 }
