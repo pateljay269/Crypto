@@ -12,44 +12,15 @@ public class Algorithms {
     }
 
     public String lfsrQue(String str) {
-        try {
-            if (str.length() < 3) {
-                throw new NumberFormatException("Enter More Than 2 Bits");
-            }
+        String output = "Que: ";
 
-            if (Integer.parseInt(str) == 0) {
-                throw new NumberFormatException("Not Allow All 0");
-            }
-
-            double size = Math.pow(2, str.length()) - 1;
-            int[] queue = new int[(int) size];
-
-            for (int i = str.length() - 1, j = 0; i >= 0; i--) {
-                int n = Integer.parseInt(str.charAt(i) + "");
-
-                if (n > 1 || n < 0) {
-                    throw new NumberFormatException("Enter Only 0 And 1");
-                }
-
-                queue[j++] = n;
-            }
-
-            for (int i = str.length(); i < size; i++) {
-                int n = (Integer.parseInt(queue[i - str.length()] + "")
-                        + Integer.parseInt(queue[i - str.length() + 1] + "")) % 2;
-                queue[i] = n;
-            }
-
-            String output = "Que: ";
-
-            for (int aQueue : queue) {
-                output += aQueue + " ";
-            }
-            return output;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return e.getMessage();
+        int[] queue = lfsr(str);
+        assert queue != null;
+        for (int aQueue : queue) {
+            output += aQueue + " ";
         }
+        return output;
+
     }
 
     @Nullable
