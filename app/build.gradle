@@ -29,5 +29,4 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile 'com.rengwuxian.materialedittext:library:2.1.4'
     compile 'com.kyleduo.switchbutton:library:1.4.6'
-    //NonUsed
 }
