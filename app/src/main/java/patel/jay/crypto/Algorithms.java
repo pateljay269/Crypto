@@ -5,10 +5,14 @@ import android.support.annotation.Nullable;
 
 public class Algorithms {
 
-    private final int size = 8;
-    private boolean type = false;
+    private String text, sIV, sIV2;
 
-    public Algorithms() {
+    private final int size = 8;
+
+    public Algorithms(String sIV, String sIV2, String text) {
+        this.sIV = sIV;
+        this.sIV2 = sIV2;
+        this.text = text;
     }
 
     public String lfsrQue(String str) {
@@ -44,39 +48,47 @@ public class Algorithms {
         return null;
     }
 
-    public String CBC(String text, String sIV, String sIV2) {
+    public String ECB() {
         try {
-            String output = "", cBit = "", pBit = "";
+            String output = "", cBit = "";
+            int[] iv = lfsr(sIV);
+            int plain[], ascii;
 
-            switch (1) {
-                case 1:
-                    type = true;
-                    break;
+            for (int i = 0; i < text.length(); i++) {
+                cBit = "";
+                char c = text.charAt(i);
+                plain = set8(Integer.toBinaryString(c));
 
-                case 2:
-                    type = false;
-                    break;
+                for (int j = 0; j < plain.length; j++) {
+                    assert iv != null;
+                    int t = (iv[j] + plain[j]) % 2;
+                    cBit += t + "";
+                }
 
-                default:
-                    CBC(text, sIV, sIV2);
-                    return "";
+                ascii = Integer.parseInt(cBit, 2);
+                output += (char) ascii;
             }
+
+            return output;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return e.getMessage();
+        }
+    }
+
+    public String CBC(boolean isEnDn) {
+        try {
+            String output = "", cBit = "";
 
             int plain[], ascii,
                     iv[] = lfsr(sIV),
                     key[] = lfsr(sIV2);
 
             for (int i = 0; i < text.length(); i++) {
-
-                char c = text.charAt(i);
                 cBit = "";
-                pBit = Integer.toBinaryString(c);
-
-                plain = new int[size];
-
-                for (int k = size, j = pBit.length() - 1; j >= 0; j--) {
-                    plain[--k] = Integer.parseInt(pBit.charAt(j) + "");
-                }
+                char c = text.charAt(i);
+                plain = set8(Integer.toBinaryString(c));
 
                 for (int j = 0; j < plain.length; j++) {
                     assert iv != null;
@@ -86,7 +98,7 @@ public class Algorithms {
                     int t = (ePT + plain[j]) % 2;
                     cBit += t + "";
 
-                    if (type) {
+                    if (isEnDn) {
                         iv[j] = t;
                     } else {
                         iv[j] = plain[j];
@@ -105,25 +117,57 @@ public class Algorithms {
         }
     }
 
-    public String OFM(String text, String sIV, String sIv2) {
+    public String CFM(boolean isEnDn) {
         try {
-            String output = "", cBit = "", pBit = "";
+            String output = "", cBit = "";
+
+            int plain[], ascii,
+                    iv[] = lfsr(sIV),
+                    key[] = lfsr(sIV2);
+
+            for (int i = 0; i < text.length(); i++) {
+                cBit = "";
+                char c = text.charAt(i);
+                plain = set8(Integer.toBinaryString(c));
+
+                for (int j = 0; j < plain.length; j++) {
+                    assert iv != null;
+                    assert key != null;
+                    int ePT = (iv[j] + key[j]) % 2;
+                    int t = (ePT + plain[j]) % 2;
+                    cBit += t + "";
+
+                    if (isEnDn) {
+                        iv[j] = t;
+                    } else {
+                        iv[j] = plain[j];
+                    }
+                }
+
+                ascii = Integer.parseInt(cBit, 2);
+                output += ((char) ascii);
+            }
+
+            return output;
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return e.getMessage();
+        }
+    }
+
+    public String OFM() {
+        try {
+            String output = "", cBit = "";
 
             int[] iv1 = lfsr(sIV);
-            int[] key = lfsr(sIv2);
+            int[] key = lfsr(sIV2);
             int plain[], ascii;
 
             for (int i = 0; i < text.length(); i++) {
-                char c = text.charAt(i);
-
                 cBit = "";
-                pBit = Integer.toBinaryString(c);
-
-                plain = new int[size];
-
-                for (int k = size, j = pBit.length() - 1; j >= 0; j--) {
-                    plain[--k] = Integer.parseInt(pBit.charAt(j) + "");
-                }
+                char c = text.charAt(i);
+                plain = set8(Integer.toBinaryString(c));
 
                 for (int j = 0; j < plain.length; j++) {
                     assert iv1 != null;
@@ -147,48 +191,41 @@ public class Algorithms {
         }
     }
 
-    public String CTR(String text, String nonce, String sIv2) {
+    public String CTR() {
         try {
             int counter = 0;
-            String cT = "", ctrBit = "", oBits = "", iBits = "";
+            String output = "", ctrBit = "", cBits = "";
 
-            int iv[], cBit[], ascii, key[] = lfsr(sIv2);
+            int iv[], pBit[], ascii, key[] = lfsr(sIV2);
 
             for (int i = 0; i < text.length(); i++) {
+                cBits = "";
 
                 iv = new int[size];
-                cBit = new int[size];
-                ctrBit = Integer.toBinaryString(counter);
-
                 for (int j = 0; j < 4; j++) {
-                    iv[j] = Integer.parseInt(nonce.charAt(j) + "");
+                    iv[j] = Integer.parseInt(sIV.charAt(j) + "");
                 }
 
+                ctrBit = Integer.toBinaryString(counter);
                 for (int k = size, j = ctrBit.length() - 1; j >= 0; j--) {
                     iv[--k] = Integer.parseInt(ctrBit.charAt(j) + "");
                 }
 
                 char ch = text.charAt(i);
+                pBit = set8(Integer.toBinaryString(ch));
 
-                oBits = "";
-                iBits = Integer.toBinaryString(ch);
-
-                for (int k = size, j = iBits.length() - 1; j >= 0; j--) {
-                    cBit[--k] = Integer.parseInt(iBits.charAt(j) + "");
-                }
-
-                for (int m = 0; m < cBit.length; m++) {
+                for (int m = 0; m < pBit.length; m++) {
 
                     assert key != null;
                     int ePT = (iv[m] + key[m]) % 2;
 
-                    int t = (ePT + cBit[m]) % 2;
-                    oBits += t + "";
+                    int t = (ePT + pBit[m]) % 2;
+                    cBits += t + "";
 
                 }
 
-                ascii = Integer.parseInt(oBits, 2);
-                cT += (char) ascii;
+                ascii = Integer.parseInt(cBits, 2);
+                output += (char) ascii;
 
                 if (counter < 15) {
                     counter++;
@@ -197,104 +234,18 @@ public class Algorithms {
                 }
             }
 
-            return cT;
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-    }
-
-    public String CFM(String text, String sIV, String sIV2) {
-        try {
-            String output = "", cBit = "", pBit = "";
-
-            switch (1) {
-                case 1:
-                    type = true;
-                    break;
-
-                case 2:
-                    type = false;
-                    break;
-
-                default:
-                    CFM(text, sIV, sIV2);
-                    return "";
-            }
-
-            int plain[], ascii,
-                    iv[] = lfsr(sIV),
-                    key[] = lfsr(sIV2);
-
-            for (int i = 0; i < text.length(); i++) {
-
-                char c = text.charAt(i);
-                cBit = "";
-                pBit = Integer.toBinaryString(c);
-
-                plain = new int[size];
-
-                for (int k = size, j = pBit.length() - 1; j >= 0; j--) {
-                    plain[--k] = Integer.parseInt(pBit.charAt(j) + "");
-                }
-
-                for (int j = 0; j < plain.length; j++) {
-                    assert iv != null;
-                    assert key != null;
-                    int ePT = (iv[j] + key[j]) % 2;
-                    int t = (ePT + plain[j]) % 2;
-                    cBit += t + "";
-
-                    if (type) {
-                        iv[j] = t;
-                    } else {
-                        iv[j] = plain[j];
-                    }
-                }
-
-                ascii = Integer.parseInt(cBit, 2);
-                output += ((char) ascii);
-            }
-
             return output;
-
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             return e.getMessage();
         }
     }
 
-    public String ECB(String text, String sIv) {
-        try {
-            String output = "", cBit = "", pBit = "";
-            int[] iv = lfsr(sIv);
-            int plain[], ascii;
-
-            for (int i = 0; i < text.length(); i++) {
-                char c = text.charAt(i);
-                cBit = "";
-                pBit = Integer.toBinaryString(c);
-
-                plain = new int[size];
-                for (int k = size, j = pBit.length() - 1; j >= 0; j--) {
-                    plain[--k] = Integer.parseInt(pBit.charAt(j) + "");
-                }
-
-                for (int j = 0; j < plain.length; j++) {
-                    assert iv != null;
-                    int t = (iv[j] + plain[j]) % 2;
-                    cBit += t + "";
-                }
-
-                ascii = Integer.parseInt(cBit, 2);
-                output += (char) ascii;
-            }
-
-            return output;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return e.getMessage();
+    public int[] set8(String pBit) {
+        int plain[] = new int[size];
+        for (int k = size, j = pBit.length() - 1; j >= 0; j--) {
+            plain[--k] = Integer.parseInt(pBit.charAt(j) + "");
         }
-    }
 
+        return plain;
+    }
 }

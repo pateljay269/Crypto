@@ -1,5 +1,6 @@
 package patel.jay.crypto;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -23,6 +24,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.kyleduo.switchbutton.SwitchButton;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
 import java.util.ArrayList;
@@ -35,9 +37,10 @@ import static patel.jay.crypto.MyConstant.etBlankCheck;
 public class CryptoActivity extends AppCompatActivity implements View.OnClickListener {
 
     Button btnClick;
-    MaterialEditText etText, etIv, etKey;
-    TextView tvAns;
     LinearLayout layout;
+    SwitchButton sbtn;
+    MaterialEditText etText, etIv, etKey;
+    TextView tvECB, tvCBC, tvCFM, tvOFM, tvCTR;
 
     Activity activity = CryptoActivity.this;
 
@@ -50,11 +53,21 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
         public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             String iv = etIv.getText().toString().trim();
             String key = etKey.getText().toString().trim();
+            String[] non = {"2", "3", "4", "5", "6", "7", "8", "9"};
 
             if (iv.isEmpty()) {
                 etIv.setText("0");
             } else if (key.isEmpty()) {
                 etKey.setText("0");
+            }
+
+            for (String s : non) {
+                if (iv.contains(s)) {
+                    etIv.setText(iv.replace(s, ""));
+                }
+                if (key.contains(s)) {
+                    etKey.setText(key.replace(s, ""));
+                }
             }
         }
 
@@ -63,10 +76,15 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
         }
     };
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crypto);
+
+        sbtn = findViewById(R.id.sbtn);
+        sbtn.setText("Enc", "Dec");
+        sbtn.setChecked(true);
 
         layout = findViewById(R.id.linear);
 
@@ -77,16 +95,26 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
         etKey.addTextChangedListener(watcher);
         etIv.addTextChangedListener(watcher);
 
-        tvAns = findViewById(R.id.tvAns);
+        tvECB = findViewById(R.id.tvECB);
+        tvCBC = findViewById(R.id.tvCBC);
+        tvCFM = findViewById(R.id.tvCFM);
+        tvOFM = findViewById(R.id.tvOFM);
+        tvCTR = findViewById(R.id.tvCTR);
+
+        tvECB.setOnClickListener(this);
+        tvCBC.setOnClickListener(this);
+        tvCFM.setOnClickListener(this);
+        tvOFM.setOnClickListener(this);
+        tvCTR.setOnClickListener(this);
 
         btnClick = findViewById(R.id.btnClick);
         btnClick.setOnClickListener(this);
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
 
     }
 
@@ -94,10 +122,49 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View view) {
 
         switch (view.getId()) {
+            case R.id.tvECB:
+            case R.id.tvCBC:
+            case R.id.tvCFM:
+            case R.id.tvOFM:
+            case R.id.tvCTR:
+                TextView tv = (TextView) view;
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("", tv.getText().toString());
+                assert clipboard != null;
+                clipboard.setPrimaryClip(clip);
+                MyConstant.toast(activity, "Copied");
+                break;
 
             case R.id.btnClick:
                 try {
-                    encDnc();
+                    String text = etText.getText().toString(),
+                            iv = etIv.getText().toString(),
+                            key = etKey.getText().toString();
+                    boolean isValid = true;
+
+                    if (Integer.parseInt(key) == 0) {
+                        etKey.setError("All 0 Not Allow");
+                        isValid = false;
+                    }
+
+                    if (Integer.parseInt(iv) == 0) {
+                        etIv.setError("All 0 Not Allow");
+                        isValid = false;
+                    }
+
+                    if (iv.length() < 4) {
+                        etIv.setError("More Than 3 Bits");
+                        isValid = false;
+                    }
+
+                    if (key.length() < 4) {
+                        etKey.setError("More Than 3 Bits");
+                        isValid = false;
+                    }
+
+                    if (isValid) {
+                        encDnc(text, iv, key);
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -106,26 +173,19 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
                 }
                 break;
         }
+
     }
 
-    private boolean checkIV(String text) {
-        for (int j = 0; j < text.length(); j++) {
-            int n = Integer.parseInt(text.charAt(j) + "");
-            if (n > 1 || n < 0) {
-                return true;
-            }
-        }
-        return false;
-    }
+    private void encDnc(String text, String iv, String key) {
+        boolean isEnDn = sbtn.isChecked();
 
-    private void encDnc() {
-        String output = "",
-                text = etText.getText().toString(),
-                iv = etIv.getText().toString(),
-                key = etKey.getText().toString();
-        Algorithms a = new Algorithms();
+        Algorithms a = new Algorithms(iv, key, text);
 
-        tvAns.setText(output);
+        tvECB.setText(a.ECB());
+        tvCBC.setText(a.CBC(isEnDn));
+        tvCFM.setText(a.CFM(isEnDn));
+        tvOFM.setText(a.OFM());
+        tvCTR.setText(a.CTR());
     }
 
     //region Action Menu
@@ -189,16 +249,3 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
     }
     //endregion
 }
-
-/*
-Copy To Clipboard
-if (tvAns.getText().toString().trim().isEmpty()) {
-                    MyConstant.toast(activity, "Data Is Not Available.");
-                } else {
-                    ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                    ClipData clip = ClipData.newPlainText("", tvAns.getText().toString());
-                    assert clipboard != null;
-                    clipboard.setPrimaryClip(clip);
-                }
-
- */
