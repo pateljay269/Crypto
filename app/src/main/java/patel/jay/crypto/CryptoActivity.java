@@ -32,12 +32,11 @@ import static patel.jay.crypto.MyConstant.clearEdittext;
 import static patel.jay.crypto.MyConstant.etBlank;
 import static patel.jay.crypto.MyConstant.etBlankCheck;
 
-public class CryptoActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
+public class CryptoActivity extends AppCompatActivity implements View.OnClickListener {
 
-    Button btnClick, btnCopy, btnClear;
+    Button btnClick;
     MaterialEditText etText, etIv, etKey;
     TextView tvAns;
-    Spinner spnType;
     LinearLayout layout;
 
     Activity activity = CryptoActivity.this;
@@ -64,15 +63,12 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
         }
     };
 
-    String[] str = {"ECB", "CFM", "OFM", "CBC", "CTR"};
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crypto);
 
         layout = findViewById(R.id.linear);
-        spnType = findViewById(R.id.spnType);
 
         etIv = findViewById(R.id.etIv);
         etKey = findViewById(R.id.etKey);
@@ -84,103 +80,24 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
         tvAns = findViewById(R.id.tvAns);
 
         btnClick = findViewById(R.id.btnClick);
-        btnCopy = findViewById(R.id.btnCopy);
-        btnClear = findViewById(R.id.btnClear);
-
         btnClick.setOnClickListener(this);
-        btnCopy.setOnClickListener(this);
-        btnClear.setOnClickListener(this);
-
-        spnType.setOnItemSelectedListener(this);
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        ArrayList<String> type = new ArrayList<>();
-        type.add("Select Algorithm");
-        type.addAll(Arrays.asList(str));
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, type);
-        spnType.setAdapter(adapter);
-
-        Animations.Scale(spnType, 1000);
-        Animations.Alpha(btnClear, 1000);
     }
 
     @Override
     public void onClick(View view) {
 
         switch (view.getId()) {
-            case R.id.btnClear:
-                clearEdittext(layout);
-                break;
-
-            case R.id.btnCopy:
-                if (tvAns.getText().toString().trim().isEmpty()) {
-                    MyConstant.toast(activity, "Data Is Not Available.");
-                } else {
-                    ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                    ClipData clip = ClipData.newPlainText("", tvAns.getText().toString());
-                    assert clipboard != null;
-                    clipboard.setPrimaryClip(clip);
-                }
-                break;
 
             case R.id.btnClick:
                 try {
-                    boolean isValid = true;
-                    String iv = etIv.getText().toString().trim();
-                    String key = etKey.getText().toString().trim();
-                    String temp = spnType.getSelectedItem().toString();
-
-                    if (checkIV(iv) || checkIV(key) || etBlank(etText)) {
-                        if (checkIV(iv)) {
-                            etIv.setError("O & 1 Allow");
-                        }
-
-                        if (checkIV(key)) {
-                            etKey.setError("O & 1 Allow");
-                        }
-
-                        etBlankCheck(etText);
-                        isValid = false;
-                    }
-
-                    if (!temp.equals("ECB")) {
-
-                        if (key.length() < 4) {
-                            etKey.setError("Enter Bits More Than 3");
-                            isValid = false;
-                        }
-                        if (Integer.parseInt(key) == 0) {
-                            etKey.setError("All 0 Not Allow");
-                            isValid = false;
-                        }
-                    }
-
-                    if (iv.length() < 4) {
-                        etIv.setError("Enter Bits More Than 3");
-                        isValid = false;
-                    }
-
-                    if (temp.equals("CTR")) {
-                        if (iv.length() != 4) {
-                            etIv.setError("Enter 4 Bits");
-                            isValid = false;
-                        }
-                    } else {
-                        if (Integer.parseInt(iv) == 0) {
-                            etIv.setError("All 0 Not Allow");
-                            isValid = false;
-                        }
-                    }
-
-                    if (isValid) {
-                        encDnc();
-                    }
+                    encDnc();
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -208,96 +125,7 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
                 key = etKey.getText().toString();
         Algorithms a = new Algorithms();
 
-        switch (spnType.getSelectedItem().toString()) {
-            case "ECB":
-                output = a.ECB(text, iv);
-                break;
-
-            case "CFM":
-                output = a.CFM(text, iv, key);
-                break;
-
-            case "OFM":
-                output = a.OFM(text, iv, key);
-                break;
-
-            case "CBC":
-                output = a.CBC(text, iv, key);
-                break;
-
-            case "CTR":
-                output = a.CTR(text, iv, key);
-                break;
-
-            default:
-                output = "";
-                break;
-
-        }
-
         tvAns.setText(output);
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
-        int max = 10;
-        String hint = "IV";
-
-        if (i == 0) {
-            layout.setVisibility(View.GONE);
-        } else {
-            layout.setVisibility(View.VISIBLE);
-
-            //region Animations
-            int random = MyConstant.randInt(1, 9);
-            int time = MyConstant.randInt(500, 700);
-            switch (random) {
-                case 1:
-                case 6:
-                    Animations.Alpha(layout, time);
-                    break;
-
-                case 2:
-                case 7:
-                    Animations.Scale(layout, time);
-                    break;
-
-                case 3:
-                case 8:
-                    Animations.MultipleAnim(layout, time);
-                    break;
-
-                case 4:
-                case 9:
-                    Animations.Rotate(layout, time);
-                    break;
-
-                case 5:
-                    Animations.MultipleAnim(layout, time);
-                    break;
-            }
-            //endregion
-        }
-
-        if (adapterView.getSelectedItem().toString().equalsIgnoreCase("ECB")) {
-            etKey.setVisibility(View.GONE);
-        } else if (adapterView.getSelectedItem().toString().equalsIgnoreCase("CTR")) {
-            max = 4;
-            hint = "Nonce";
-            etKey.setVisibility(View.VISIBLE);
-        } else {
-            etKey.setVisibility(View.VISIBLE);
-        }
-
-        tvAns.setText("");
-        etIv.setHint("Enter " + hint);
-        etIv.setFloatingLabelText("Enter " + hint);
-        etIv.setFilters(new InputFilter[]{new InputFilter.LengthFilter(max)});
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> adapterView) {
     }
 
     //region Action Menu
@@ -361,3 +189,16 @@ public class CryptoActivity extends AppCompatActivity implements View.OnClickLis
     }
     //endregion
 }
+
+/*
+Copy To Clipboard
+if (tvAns.getText().toString().trim().isEmpty()) {
+                    MyConstant.toast(activity, "Data Is Not Available.");
+                } else {
+                    ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("", tvAns.getText().toString());
+                    assert clipboard != null;
+                    clipboard.setPrimaryClip(clip);
+                }
+
+ */
