@@ -37,7 +37,7 @@ public class Algorithms {
                 queue[j++] = n;
             }
             for (int i = str.length(); i < size; i++) {
-                int n = (queue[i - str.length()] + queue[i - str.length() + 1]) % 2;
+                int n = queue[i - str.length()] ^ queue[i - str.length() + 1];
                 queue[i] = n;
             }
 
